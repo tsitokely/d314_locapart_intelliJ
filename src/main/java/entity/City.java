@@ -18,6 +18,11 @@ public class City {
     private String cityName="";
     
     public City(){}
+    
+    public City(String cityID, String cityName){
+        this.cityID = cityID;
+        this.cityName = cityName;
+    }
 
     @XmlElement(name="cityID",required=true,nillable=false)
     public String getCityID() {
