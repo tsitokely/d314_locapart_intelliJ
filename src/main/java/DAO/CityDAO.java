@@ -19,8 +19,9 @@ import java.util.logging.Logger;
  * @author tsito
  */
 public class CityDAO {
+    
     public static City[] loadAll(){
-        List<City> liste=new ArrayList<City>();
+        List<City> cities=new ArrayList<City>();
         try{
             ResultSet rs=SQLite.getConnection().query(
                     "SELECT CityID, CityName FROM Cities r ;"
@@ -28,11 +29,30 @@ public class CityDAO {
             while(rs.next()){
                 String CityID=rs.getString("CityID");
                 String CityName=rs.getString("CityName");
-                liste.add(new City(CityID,CityName));
+                cities.add(new City(CityID,CityName));
             }
         } catch (SQLException ex) {
             Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
         }
-        return liste.toArray(City[]::new);
+        return cities.toArray(City[]::new);
+    }
+    
+    public static City[] findCity(String keyword){
+        List<City> citiesKey=new ArrayList<City>();
+        try{
+            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Query: {0}", keyword);
+            ResultSet rs=SQLite.getConnection().query(
+                    "SELECT DISTINCT CityID, CityName FROM Cities r "
+                    +"WHERE r.CityName like '%"+keyword+"%' OR r.CityID like '%"+keyword+"%';"
+            );           
+            while(rs.next()){
+                String CityID=rs.getString("CityID");
+                String CityName=rs.getString("CityName");
+                citiesKey.add(new City(CityID,CityName));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
+        }
+        return citiesKey.toArray(City[]::new);
     }
 }
