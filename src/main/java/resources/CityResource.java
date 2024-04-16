@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.Response;
  *
  * @author 
  */
-@Path("WsLocaPart")
+@Path("City")
 public class CityResource {
     
     @GET
