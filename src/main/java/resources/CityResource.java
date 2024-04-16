@@ -20,9 +20,7 @@ public class CityResource {
     
     @GET
     @Produces("application/json")
-    public Response ping(@Context jakarta.ws.rs.core.UriInfo uri){
-            return Response
-                .ok("City",MediaType.TEXT_PLAIN)
-                .build();
+    public Response ping(){
+            return Response.ok(CityDAO.loadAll()).build();
     }
 }

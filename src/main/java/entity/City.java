@@ -14,8 +14,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="City")
 public class City {
-    private String cityID="";
-    private String cityName="";
+    private String cityID="<indéfini>";
+    private String cityName="<indéfini>";
     
     public City(){}
     
@@ -24,12 +24,12 @@ public class City {
         this.cityName = cityName;
     }
 
-    @XmlElement(name="cityID",required=true,nillable=false)
+    @XmlElement(name="cityID",required=true,nillable=true )
     public String getCityID() {
         return cityID;
     }
 
-    @XmlElement(name="cityName",required=true,nillable=false)
+    @XmlElement(name="cityName",required=true,nillable=true)
     public String getCityName() {
         return cityName;
     }

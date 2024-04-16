@@ -19,20 +19,20 @@ import java.util.logging.Logger;
  * @author tsito
  */
 public class CityDAO {
-    public static City loadAll(){
-        City r=null;
+    public static City[] loadAll(){
+        List<City> liste=new ArrayList<City>();
         try{
             ResultSet rs=SQLite.getConnection().query(
                     "SELECT CityID, CityName FROM Cities r ;"
             );           
-            if(rs.next()){
+            while(rs.next()){
                 String CityID=rs.getString("CityID");
                 String CityName=rs.getString("CityName");
-                r=new City(CityID,CityName);
-            } else throw new NotFoundException();
+                liste.add(new City(CityID,CityName));
+            }
         } catch (SQLException ex) {
-            Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,"Loading error", ex);
+            Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
         }
-        return r;
+        return liste.toArray(City[]::new);
     }
 }
