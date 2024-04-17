@@ -55,4 +55,17 @@ public class CityDAO {
         }
         return citiesKey.toArray(City[]::new);
     }
+    
+        public static boolean create(City r){
+        try{
+            SQLite.getConnection().query(
+                "INSERT INTO Cities(CityID,CityName) Values('"+r.getCityID()+"','"+r.getCityName()+"');"
+            );
+            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Query creation: {0}", r);
+            return true;
+        } catch (SQLException ex) {
+            Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
+        }
+        return false;
+    }
 }
