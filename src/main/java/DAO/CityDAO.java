@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class CityDAO {
     
-    public static City[] loadAll(){
+    public static City[] getAllCities(){
         List<City> cities=new ArrayList<City>();
         try{
             ResultSet rs=SQLite.getConnection().query(
@@ -37,35 +37,58 @@ public class CityDAO {
         return cities.toArray(City[]::new);
     }
     
-    public static City[] findCity(String keyword){
-        List<City> citiesKey=new ArrayList<City>();
+    public static City[] getSpecificCity(String keyword){
+        List<City> cities=new ArrayList<City>();
         try{
-            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Query: {0}", keyword);
+            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Keyword to be searched: {0}", keyword);
             ResultSet rs=SQLite.getConnection().query(
                     "SELECT DISTINCT CityID, CityName FROM Cities r "
-                    +"WHERE r.CityName like '%"+keyword+"%' OR r.CityID like '%"+keyword+"%';"
+                    +"WHERE r.CityName like '%"+keyword+"%' OR r.CityID like '%"+keyword+"%' ORDER BY 1 ASC;"
             );           
             while(rs.next()){
                 String CityID=rs.getString("CityID");
                 String CityName=rs.getString("CityName");
-                citiesKey.add(new City(CityID,CityName));
+                cities.add(new City(CityID,CityName));
             }
         } catch (SQLException ex) {
             Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
         }
-        return citiesKey.toArray(City[]::new);
+        return cities.toArray(City[]::new);
     }
     
-        public static boolean create(City r){
+        public static City[] searchForCityWithVacantApartment(int year, int noSem){
+        List<City> cities=new ArrayList<City>();
         try{
-            SQLite.getConnection().query(
-                "INSERT INTO Cities(CityID,CityName) Values('"+r.getCityID()+"','"+r.getCityName()+"');"
-            );
-            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Query creation: {0}", r);
-            return true;
+            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Year: {0}, Week number: {1}", new Object[]{year, noSem});
+            ResultSet rs=SQLite.getConnection().query(
+                    "SELECT DISTINCT cityID,cityName"
+                    +" FROM ("
+                    +" 	SELECT a.CityID cityID"
+                    +" 		,c.CityName cityName"
+                    +" 		,a.apartmentID"
+                    +" 	FROM Apartments a"
+                    +" 	LEFT JOIN Cities c ON c.CityID = a.CityID"
+                    +" 	LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID"
+                    +" 	EXCEPT"
+                    +" 	SELECT a.CityID"
+                    +" 		,c.CityName"
+                    +" 		,a.apartmentID"
+                    +" 	FROM Apartments a"
+                    +" 	LEFT JOIN Cities c ON c.CityID = a.CityID"
+                    +" 	LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID"
+                    +" 	WHERE r.reservationDateYear =" + year
+                    +" 		AND r.reservationDateNoSem ="+noSem
+                    +" 	)"
+                    +" ORDER BY 1 ASC;"
+            );           
+            while(rs.next()){
+                String CityID=rs.getString("CityID");
+                String CityName=rs.getString("CityName");
+                cities.add(new City(CityID,CityName));
+            }
         } catch (SQLException ex) {
             Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
         }
-        return false;
-    }
+        return cities.toArray(City[]::new);
+    }  
 }

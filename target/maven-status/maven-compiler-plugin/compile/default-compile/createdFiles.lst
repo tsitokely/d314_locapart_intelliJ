@@ -1,5 +1,5 @@
 com\emiage\wslocapart\JakartaRestConfiguration.class
-helper\SQLite.class
 DAO\CityDAO.class
 entity\City.class
 resources\CityResource.class
+helper\SQLite.class
