@@ -56,30 +56,24 @@ public class CityDAO {
         return cities.toArray(City[]::new);
     }
     
-        public static City[] searchForCityWithVacantApartment(int year, int noSem){
+        public static City[] searchForCityWithVacantApartment(int yearStart,int yearEnd, int weekStart,int weekEnd){
         List<City> cities=new ArrayList<City>();
         try{
-            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "Year: {0}, Week number: {1}", new Object[]{year, noSem});
+            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "YearStart: {0}, WeekStart: {1}, YearStart: {2}, WeekStart: {3}", new Object[]{yearStart, weekStart, yearEnd,weekEnd });
             ResultSet rs=SQLite.getConnection().query(
-                    "SELECT DISTINCT cityID,cityName"
-                    +" FROM ("
-                    +" 	SELECT a.CityID cityID"
-                    +" 		,c.CityName cityName"
-                    +" 		,a.apartmentID"
-                    +" 	FROM Apartments a"
-                    +" 	LEFT JOIN Cities c ON c.CityID = a.CityID"
-                    +" 	LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID"
-                    +" 	EXCEPT"
-                    +" 	SELECT a.CityID"
-                    +" 		,c.CityName"
-                    +" 		,a.apartmentID"
-                    +" 	FROM Apartments a"
-                    +" 	LEFT JOIN Cities c ON c.CityID = a.CityID"
-                    +" 	LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID"
-                    +" 	WHERE r.reservationDateYear =" + year
-                    +" 		AND r.reservationDateNoSem ="+noSem
-                    +" 	)"
-                    +" ORDER BY 1 ASC;"
+                    "SELECT DISTINCT Cities.cityId, Cities.cityName"
+                    + " FROM Cities"
+                    + " INNER JOIN Apartments ON Cities.cityId = Apartments.cityID"
+                    + " LEFT JOIN Reservations ON Apartments.apartmentID = Reservations.apartmentID"
+                    + " WHERE NOT EXISTS ("
+                    + "     SELECT 1"
+                    + "     FROM Reservations"
+                    + "     WHERE Reservations.apartmentID = Apartments.apartmentID AND"
+                    + " 		  (Reservations.reservationDateYear >" + yearStart + " OR "
+                    + "           	(Reservations.reservationDateYear =" + yearStart + " AND Reservations.reservationDateNoSem >=" + weekStart + " ))"
+                    + "       AND (Reservations.reservationDateYear <" + yearEnd + " OR"
+                    + "           	(Reservations.reservationDateYear =" + yearEnd + " AND Reservations.reservationDateNoSem <=" + weekEnd + " ))"
+                    + " ) ORDER BY 1 ASC;"
             );           
             while(rs.next()){
                 String CityID=rs.getString("CityID");
