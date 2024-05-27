@@ -14,8 +14,8 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="City")
 public class City {
-    private String cityID="<indéfini>";
-    private String cityName="<indéfini>";
+    private String cityID="<indefinite>";
+    private String cityName="<indefinite>";
     
     public City(){}
     

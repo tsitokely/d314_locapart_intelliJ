@@ -4,7 +4,6 @@
  */
 package entity;
 
-import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -15,22 +14,22 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="Apartment")
 public class Apartment {
     private int apartmentID=0;
-    private String cityID="<indéfini>";
-    private String apartmentName="<indéfini>";
-    private String apartmentDesc="<indéfini>";
+    private String cityID="<indefinite>";
+    private String apartmentName="<indefinite>";
+    private String apartmentDesc="<indefinite>";
     private float apartmentPrice = 0.0f;
-    private String apartmentAdress="<indéfini>";
+    private String apartmentAddress ="<indefinite>";
     
     
     public Apartment(){}
     
-    public Apartment(int apartmentID, String cityID, String apartmentName, String apartmentDesc,  float apartmentPrice,  String apartmentAdress ){
+    public Apartment(int apartmentID, String cityID, String apartmentName, String apartmentDesc,  float apartmentPrice,  String apartmentAddress ){
         this.apartmentID = apartmentID;
         this.cityID = cityID;
         this.apartmentName = apartmentName;
         this.apartmentDesc = apartmentDesc;
         this.apartmentPrice = apartmentPrice;
-        this.apartmentAdress = apartmentAdress;
+        this.apartmentAddress = apartmentAddress;
     }
 
     public int getApartmentID() {
@@ -53,8 +52,8 @@ public class Apartment {
         return apartmentPrice;
     }
 
-    public String getApartmentAdress() {
-        return apartmentAdress;
+    public String getApartmentAddress() {
+        return apartmentAddress;
     }
 
     public void setApartmentID(int apartmentID) {
@@ -77,7 +76,7 @@ public class Apartment {
         this.apartmentPrice = apartmentPrice;
     }
 
-    public void setApartmentAdress(String apartmentAdress) {
-        this.apartmentAdress = apartmentAdress;
+    public void setApartmentAddress(String apartmentAddress) {
+        this.apartmentAddress = apartmentAddress;
     }
 }
