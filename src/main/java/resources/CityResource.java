@@ -33,36 +33,6 @@ public class CityResource {
                     .status(200)
                     .build();
         }
-        else if(p.containsKey("yearStart")&&p.containsKey("yearEnd")&&p.containsKey("weekStart")&&p.containsKey("weekEnd")){
-            String yearStartString = (String)p.getFirst("yearStart");
-            String yearEndString = (String)p.getFirst("yearEnd");
-            int yearStart;
-            int yearEnd;
-            String weekStartString = (String)p.getFirst("weekStart");
-            String weekEndString = (String)p.getFirst("weekEnd");
-            int weekStart;
-            int weekEnd;
-            try {
-                yearStart = Integer.parseInt(yearStartString);
-                yearEnd = Integer.parseInt(yearEndString);
-                weekStart = Integer.parseInt(weekStartString);
-                weekEnd = Integer.parseInt(weekEndString);
-                return Response
-                        .ok(CityDAO.searchForCityWithVacantApartment(yearStart,yearEnd,weekStart,weekEnd))
-                        .status(200)
-                        .header("Access-Control-Allow-Origin", "*")
-                        .header("Access-Control-Allow-Credentials", "true")
-                        .header("Access-Control-Allow-Headers",
-                                "origin, content-type, accept, authorization")
-                        .header("Access-Control-Allow-Methods",
-                                "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-                        .entity("")
-                        .build();
-            } 
-            catch (NumberFormatException e) {
-                Logger.getLogger(CityResource.class.getName()).log(Level.SEVERE, "YearStart: {0}, WeekStart: {1}, YearEnd: {2}, WeekEnd: {3}", new Object[]{yearStartString, weekStartString, yearEndString, weekEndString});
-            }
-        }
         return Response.ok(CityDAO.getAllCities()).build();
     }
     
