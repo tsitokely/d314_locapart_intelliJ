@@ -40,6 +40,28 @@ public class ApartmentDAO {
         return apartments.toArray(Apartment[]::new);
     }
 
+    public static Apartment[] getApartmentDetails(int apartmentID){
+        List<Apartment> apartments=new ArrayList<Apartment>();
+        try(ResultSet rs=SQLite.getConnection().query(
+                "SELECT " +
+                        "	 a.apartmentId\n" +
+                        "	,c.cityID\n" +
+                        "	,a.apartmentName\n" +
+                        "	,a.apartmentDesc\n" +
+                        "	,a.apartmentPrice\n" +
+                        "	,a.apartmentAdress\n" +
+                        "FROM Apartments a\n" +
+                            "JOIN Cities c ON a.cityId = c.cityId\n" +
+                        "WHERE a.apartmentId = '" + apartmentID + "'\n" +
+                        "ORDER BY 1"
+        )){
+            AddApartmentsFromQuery(apartments, rs);
+        } catch (SQLException ex) {
+            Logger.getLogger(ApartmentDAO.class.getName()).log(Level.SEVERE,null, ex);
+        }
+        return apartments.toArray(Apartment[]::new);
+    }
+
     public static Apartment[] getAllApartmentsFromCity(String cityIDParam){
         List<Apartment> apartments=new ArrayList<Apartment>();
         try(ResultSet rs=SQLite.getConnection().query(
@@ -51,7 +73,7 @@ public class ApartmentDAO {
                         "	,apartmentPrice\n" +
                         "	,apartmentAdress\n" +
                         "FROM Apartments a\n" +
-                        "JOIN Cities c ON a.cityId = c.cityId\n" +
+                            "JOIN Cities c ON a.cityId = c.cityId\n" +
                         "WHERE c.cityID = '" + cityIDParam + "'\n" +
                         "ORDER BY 1"
         )){
@@ -73,8 +95,8 @@ public class ApartmentDAO {
                         "	,a.apartmentPrice\n" +
                         "	,a.apartmentAdress\n" +
                         "FROM Apartments a\n" +
-                        "INNER JOIN Cities c ON a.cityId = c.cityId\n" +
-                        "LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID\n" +
+                            "INNER JOIN Cities c ON a.cityId = c.cityId\n" +
+                            "LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID\n" +
                         "WHERE NOT EXISTS (\n" +
                         "   SELECT 1\n" +
                         "   FROM Reservations r\n" +
@@ -86,7 +108,7 @@ public class ApartmentDAO {
                         "       (r.reservationDateYear = " + yearEnd + " AND r.reservationDateNoSem <= " + weekEnd + ")\n" +
                         "   )\n" +
                         ")\n" +
-                        "AND c.cityID = '" + cityIDParam + "'\n" +
+                            "AND c.cityID = '" + cityIDParam + "'\n" +
                         "ORDER BY 1"
         )){
             AddApartmentsFromQuery(apartments, rs);

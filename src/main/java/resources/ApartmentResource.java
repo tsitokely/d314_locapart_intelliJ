@@ -29,13 +29,24 @@ public class ApartmentResource {
                 .build();
     }
 
-    @GET
+    /*@GET
     @Path("/{cityId}")
     @Produces("application/json")
     public Response ApartmentsInCity(@PathParam("cityId") String cityId){
         return Response
                 .ok(ApartmentDAO
                         .getAllApartmentsFromCity(cityId))
+                .status(200)
+                .build();
+    }*/
+
+    @GET
+    @Path("/{apartmentId}")
+    @Produces("application/json")
+    public Response ApartmentDetails(@PathParam("apartmentId") int apartmentId){
+        return Response
+                .ok(ApartmentDAO
+                        .getApartmentDetails(apartmentId))
                 .status(200)
                 .build();
     }
@@ -49,11 +60,6 @@ public class ApartmentResource {
             @PathParam("weekStart") int weekStart,
             @PathParam("yearEnd") int yearEnd,
             @PathParam("weekEnd") int weekEnd){
-        Logger.getLogger(SQLite.class.getName()).log(Level.INFO,cityId);
-        Logger.getLogger(SQLite.class.getName()).log(Level.INFO,String.valueOf(yearStart));
-        Logger.getLogger(SQLite.class.getName()).log(Level.INFO,String.valueOf(weekStart));
-        Logger.getLogger(SQLite.class.getName()).log(Level.INFO,String.valueOf(yearEnd));
-        Logger.getLogger(SQLite.class.getName()).log(Level.INFO,String.valueOf(weekEnd));
         return Response
                 .ok(ApartmentDAO
                         .getAllApartmentsFromCityAndPeriod(cityId, yearStart, yearEnd, weekStart, weekEnd))
