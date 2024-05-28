@@ -11,8 +11,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.core.MultivaluedMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *

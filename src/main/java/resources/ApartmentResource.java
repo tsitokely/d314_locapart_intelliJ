@@ -1,15 +1,11 @@
 package resources;
 
 import DAO.ApartmentDAO;
-import helper.SQLite;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -66,5 +62,4 @@ public class ApartmentResource {
                 .status(200)
                 .build();
     }
-
 }
