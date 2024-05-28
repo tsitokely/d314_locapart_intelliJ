@@ -29,12 +29,24 @@ public class CityResource {
         if(p.containsKey("q")){
             String keyword = (String)p.getFirst("q");
             return Response
-                    .ok(CityDAO.getSpecificCity(keyword))
+                    .ok(CityDAO.
+                            getSpecificCity(keyword))
                     .status(200)
                     .build();
         }
         return Response.ok(CityDAO.getAllCities()).build();
     }
+
+    @GET
+    @Path("/{CityID}")
+    @Produces("application/json")
+    public Response ping(@PathParam("CityID") String CityID){
+        return Response
+                .ok(CityDAO
+                        .getCityInfo(CityID))
+                .status(200)
+                .build();
+        }
     
     @GET
     @Path("/{year}/{week}")
