@@ -54,32 +54,32 @@ public class CityDAO {
         return cities.toArray(City[]::new);
     }
     
-        public static City[] searchForCityWithVacantApartment(int yearStart,int yearEnd, int weekStart,int weekEnd){
-        List<City> cities=new ArrayList<City>();
-        try(ResultSet rs=SQLite.getConnection().query(
-                "SELECT DISTINCT Cities.cityId, Cities.cityName"
-                        + " FROM Cities"
-                        + " INNER JOIN Apartments ON Cities.cityId = Apartments.cityID"
-                        + " LEFT JOIN Reservations ON Apartments.apartmentID = Reservations.apartmentID"
-                        + " WHERE NOT EXISTS ("
-                        + "     SELECT 1"
-                        + "     FROM Reservations"
-                        + "     WHERE Reservations.apartmentID = Apartments.apartmentID AND"
-                        + " 		  (Reservations.reservationDateYear >" + yearStart + " OR "
-                        + "           	(Reservations.reservationDateYear =" + yearStart + " AND Reservations.reservationDateNoSem >=" + weekStart + " ))"
-                        + "       AND (Reservations.reservationDateYear <" + yearEnd + " OR"
-                        + "           	(Reservations.reservationDateYear =" + yearEnd + " AND Reservations.reservationDateNoSem <=" + weekEnd + " ))"
-                        + " ) ORDER BY 1 ASC;"
-        )){
-            Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "YearStart: {0}, WeekStart: {1}, YearStart: {2}, WeekStart: {3}", new Object[]{yearStart, weekStart, yearEnd,weekEnd });
-            while(rs.next()){
-                String CityID=rs.getString("CityID");
-                String CityName=rs.getString("CityName");
-                cities.add(new City(CityID,CityName));
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
+    public static City[] searchForCityWithVacantApartment(int yearStart,int yearEnd, int weekStart,int weekEnd){
+    List<City> cities=new ArrayList<City>();
+    try(ResultSet rs=SQLite.getConnection().query(
+            "SELECT DISTINCT Cities.cityId, Cities.cityName"
+                    + " FROM Cities"
+                    + " INNER JOIN Apartments ON Cities.cityId = Apartments.cityID"
+                    + " LEFT JOIN Reservations ON Apartments.apartmentID = Reservations.apartmentID"
+                    + " WHERE NOT EXISTS ("
+                    + "     SELECT 1"
+                    + "     FROM Reservations"
+                    + "     WHERE Reservations.apartmentID = Apartments.apartmentID AND"
+                    + " 		  (Reservations.reservationDateYear >" + yearStart + " OR "
+                    + "           	(Reservations.reservationDateYear =" + yearStart + " AND Reservations.reservationDateNoSem >=" + weekStart + " ))"
+                    + "       AND (Reservations.reservationDateYear <" + yearEnd + " OR"
+                    + "           	(Reservations.reservationDateYear =" + yearEnd + " AND Reservations.reservationDateNoSem <=" + weekEnd + " ))"
+                    + " ) ORDER BY 1 ASC;"
+    )){
+        Logger.getLogger(CityDAO.class.getName()).log(Level.INFO, "YearStart: {0}, WeekStart: {1}, YearStart: {2}, WeekStart: {3}", new Object[]{yearStart, weekStart, yearEnd,weekEnd });
+        while(rs.next()){
+            String CityID=rs.getString("CityID");
+            String CityName=rs.getString("CityName");
+            cities.add(new City(CityID,CityName));
         }
-        return cities.toArray(City[]::new);
-    }  
+    } catch (SQLException ex) {
+        Logger.getLogger(CityDAO.class.getName()).log(Level.SEVERE,null, ex);
+    }
+    return cities.toArray(City[]::new);
+}
 }
