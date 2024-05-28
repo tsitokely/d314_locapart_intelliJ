@@ -14,7 +14,7 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 /**
  *
- * @author 
+ * @author Tsito
  */
 @Path("City")
 public class CityResource {
