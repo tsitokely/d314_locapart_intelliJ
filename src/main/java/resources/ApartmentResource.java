@@ -48,6 +48,20 @@ public class ApartmentResource {
     }
 
     @GET
+    @Path("/{yearStart}-{weekStart}/{yearEnd}-{weekEnd}")
+    @Produces("application/json")
+    public Response ApartmentsInCityAndPeriod(
+            @PathParam("yearStart") int yearStart,
+            @PathParam("weekStart") int weekStart,
+            @PathParam("yearEnd") int yearEnd,
+            @PathParam("weekEnd") int weekEnd){
+        return Response
+                .ok(ApartmentDAO
+                        .getAllApartmentsFromPeriod(yearStart, yearEnd, weekStart, weekEnd))
+                .status(200)
+                .build();
+    }
+    @GET
     @Path("/{cityId}/{yearStart}-{weekStart}/{yearEnd}-{weekEnd}")
     @Produces("application/json")
     public Response ApartmentsInCityAndPeriod(
