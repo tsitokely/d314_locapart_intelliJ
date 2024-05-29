@@ -84,7 +84,7 @@ public class ApartmentDAO {
         return apartments.toArray(Apartment[]::new);
     }
 
-    public static Apartment[] getAllApartmentsFromPeriod(int yearStart,int yearEnd, int weekStart,int weekEnd){
+    public static Apartment[] getAllApartmentsInPeriod(int yearStart,int yearEnd, int weekStart,int weekEnd){
         List<Apartment> apartments=new ArrayList<Apartment>();
         try(ResultSet rs=SQLite.getConnection().query(
                 "SELECT " +
