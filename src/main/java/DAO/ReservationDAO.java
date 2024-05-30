@@ -40,33 +40,54 @@ public class ReservationDAO {
         return reservations.toArray(Reservation[]::new);
     }
 
-    public static boolean InsertNewReservation(Reservation r){
+    public static boolean InsertNewReservations(Object input){
+        // Vérifier si l'on traite une liste de réservations ou juste une réservation
+        // Il n'y aura que les semaines qui changeront pour chaque appel
+        List<Reservation> reservationsList = new ArrayList<>();
+        // Check if input is a single reservation
+        if (input instanceof Reservation) {
+            reservationsList.add((Reservation) input);
+        } else if (input instanceof List<?>) {
+            for (Object obj : (List<?>) input) {
+                if (obj instanceof Reservation) {
+                    reservationsList.add((Reservation) obj);
+                } else{
+                    Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE, "Invalid input format");
+                    return false;
+                }
+            }
+        } else{
+            Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE, "Invalid input format");
+            return false;
+        }
         try{
-            // Vérifier qu'il n'y a pas déjà une réservation similaire dans la BD
-            ResultSet rs = SQLite.getConnection().query(
-                    "SELECT * " +
-                        "FROM Reservations " +
-                        "WHERE reservationName = " + r.getReservationName() +
-                        " AND reservationDateYear = " + r.getReservationDateYear() +
-                        " AND reservationDateNoSem = " + r.getReservationDateNoSem() +
-                        " AND apartmentID = " + r.getApartmentID() +
-                        " ;"
-            );
-            if (rs.next()) {
-                Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Cannot create: Similar reservation already exists.");
-                return false;
-            } else {
-                SQLite.getConnection().query(
-                        "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
-                                "Values('"+
-                                r.getReservationName() + "','" +
-                                r.getReservationDateYear() + "','" +
-                                r.getReservationDateNoSem() + "','" +
-                                r.getApartmentID() +
-                                "');"
+            for (Reservation r : reservationsList){
+                // Vérifier qu'il n'y a pas déjà une réservation similaire dans la BD
+                ResultSet rs = SQLite.getConnection().query(
+                        "SELECT * " +
+                                "FROM Reservations " +
+                                "WHERE reservationName = " + r.getReservationName() +
+                                " AND reservationDateYear = " + r.getReservationDateYear() +
+                                " AND reservationDateNoSem = " + r.getReservationDateNoSem() +
+                                " AND apartmentID = " + r.getApartmentID() +
+                                " ;"
                 );
-                Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Reservation created: {0}", r);
-                return true;
+                if (rs.next()) {
+                    Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Cannot create {0}: Similar reservation already exists.",r);
+                    continue;
+                } else {
+                    SQLite.getConnection().query(
+                            "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
+                                    "Values('"+
+                                    r.getReservationName() + "','" +
+                                    r.getReservationDateYear() + "','" +
+                                    r.getReservationDateNoSem() + "','" +
+                                    r.getApartmentID() +
+                                    "');"
+                    );
+                    Logger. getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Reservation created: {0}", r);
+                    return true;
+                }
             }
         } catch (SQLException ex) {
             Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE,null, ex);

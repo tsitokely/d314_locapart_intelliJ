@@ -27,12 +27,12 @@ public class ReservationResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response NewReservation(Reservation r){
-        boolean result = ReservationDAO.InsertNewReservation(r);
+    public Response NewReservations(Object input){
+        boolean result = ReservationDAO.InsertNewReservations(input);
         if(result){
             return Response.status(Response.Status.CREATED).build();
         } else{
-            return Response.status(Response.Status.CONFLICT).entity("Similar reservation already exists.").build();
+            return Response.status(Response.Status.CONFLICT).entity("One or more similar reservations already exist or have invalid input format.").build();
         }
     }
 
