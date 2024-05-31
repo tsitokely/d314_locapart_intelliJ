@@ -4,21 +4,29 @@
  */
 package DAO;
 
-import entity.Apartment;
 import entity.Reservation;
+import entity.ReservationDTO;
 import helper.SQLite;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  *
  * @author tsito
  */
 public class ReservationDAO {
+    private static final Logger console = Logger.getLogger(ReservationDAO.class.getName());
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String TEMPLATE_JSON_CREATE = "{\"reservationName\":\"\",\"reservationDateYear\":0,\"reservationDateNoSem\":0,\"apartmentID\":0}";
     
     public static Reservation[] getAllReservations(){
         List<Reservation> reservations=new ArrayList<Reservation>();
@@ -35,63 +43,78 @@ public class ReservationDAO {
         )){
             AddReservationsFromQuery(reservations, rs);
         } catch (SQLException ex) {
-            Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE,null, ex);
+            console.log(Level.SEVERE,null, ex);
         }
         return reservations.toArray(Reservation[]::new);
     }
 
     public static boolean InsertNewReservations(Object input){
-        // Vérifier si l'on traite une liste de réservations ou juste une réservation
-        // Il n'y aura que les semaines qui changeront pour chaque appel
-        List<Reservation> reservationsList = new ArrayList<>();
-        // Check if input is a single reservation
-        if (input instanceof Reservation) {
-            reservationsList.add((Reservation) input);
-        } else if (input instanceof List<?>) {
-            for (Object obj : (List<?>) input) {
-                if (obj instanceof Reservation) {
-                    reservationsList.add((Reservation) obj);
-                } else{
-                    Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE, "Invalid input format");
+        if (input instanceof ReservationDTO) {
+            return InsertNewReservations(List.of((ReservationDTO) input));
+        } else if (input instanceof List<?>){
+            List<?> inputList = (List<?>) input;
+            for (Object obj : inputList) {
+                if (!(obj instanceof ReservationDTO)) {
+                    console.log(Level.SEVERE, "Invalid input format");
                     return false;
                 }
             }
+            return InsertNewReservations((List<ReservationDTO>) inputList);
         } else{
-            Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE, "Invalid input format");
+            console.log(Level.SEVERE, "Invalid input format");
             return false;
         }
-        try{
-            for (Reservation r : reservationsList){
+    }
+
+    public static boolean InsertNewReservations(List<ReservationDTO> reservationsList) {
+        int i = 0;
+        for (ReservationDTO r : reservationsList){
+            String jsonInput;
+            try {
+                jsonInput = objectMapper.writeValueAsString(r);
+            } catch (Exception e) {
+                console.log(Level.SEVERE, "Error converting reservation to JSON", e);
+                return false;
+            }
+            console.log(Level.INFO, "input: {0}", jsonInput);
+            if (!compareJsonWithTemplate(jsonInput)) {
+                console.log(Level.SEVERE, "Invalid input format for: {0}", jsonInput);
+                return false;
+            }
+            i++;
+            console.log(Level.INFO, "DB operation");
+            try {
                 // Vérifier qu'il n'y a pas déjà une réservation similaire dans la BD
                 ResultSet rs = SQLite.getConnection().query(
                         "SELECT * " +
                                 "FROM Reservations " +
-                                "WHERE reservationName = " + r.getReservationName() +
+                                "WHERE reservationName = '" + r.getReservationName() + "' " +
                                 " AND reservationDateYear = " + r.getReservationDateYear() +
                                 " AND reservationDateNoSem = " + r.getReservationDateNoSem() +
                                 " AND apartmentID = " + r.getApartmentID() +
                                 " ;"
                 );
                 if (rs.next()) {
-                    Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Cannot create {0}: Similar reservation already exists.",r);
+                    console.log(Level.INFO, "Cannot create {0}: Similar reservation already exists.", r);
                     continue;
                 } else {
                     SQLite.getConnection().query(
                             "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
                                     "Values('"+
-                                    r.getReservationName() + "','" +
-                                    r.getReservationDateYear() + "','" +
-                                    r.getReservationDateNoSem() + "','" +
+                                    r.getReservationName() + "'," +
+                                    r.getReservationDateYear() + "," +
+                                    r.getReservationDateNoSem() + "," +
                                     r.getApartmentID() +
-                                    "');"
+                                    ");"
                     );
-                    Logger. getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Reservation created: {0}", r);
+                    console.log(Level.INFO, "Reservation created: {0}", r);
                     return true;
                 }
+            } catch (SQLException ex) {
+                console.log(Level.SEVERE,null, ex);
             }
-        } catch (SQLException ex) {
-            Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE,null, ex);
         }
+        console.log(Level.INFO, "loop count: {0}", i);
         return false;
     }
 
@@ -101,7 +124,7 @@ public class ReservationDAO {
             ResultSet rs = SQLite.getConnection().query(
                     "SELECT * " +
                             "FROM Reservations " +
-                            "WHERE reservationName = " + newReservation.getReservationName() +
+                            "WHERE reservationName = '" + newReservation.getReservationName()  + "' " +
                                 " AND reservationDateYear = " + newReservation.getReservationDateYear() +
                                 " AND reservationDateNoSem = " + newReservation.getReservationDateNoSem() +
                                 " AND apartmentID = " + newReservation.getApartmentID() +
@@ -109,7 +132,7 @@ public class ReservationDAO {
             );
 
             if (rs.next()) {
-                Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Cannot update: similar reservation already exists.");
+                console.log(Level.INFO, "Cannot update: similar reservation already exists.");
                 return false;
             } else {
                 // Update the reservation
@@ -131,7 +154,7 @@ public class ReservationDAO {
                 return true;
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE, null, ex);
+            console.log(Level.SEVERE, null, ex);
         }
         return false;
     }
@@ -141,16 +164,16 @@ public class ReservationDAO {
             SQLite.getConnection().query(
                     "DELETE " +
                         "FROM Reservations " +
-                            "WHERE reservationName = " + r.getReservationName() +
+                            "WHERE reservationName = '" + r.getReservationName()  + "' " +
                             " AND reservationDateYear = " + r.getReservationDateYear() +
                             " AND reservationDateNoSem = " + r.getReservationDateNoSem() +
                             " AND apartmentID = " + r.getApartmentID() +
                             " ;"
             );
-            Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Reservation deleted: {0}", r);
+            console.log(Level.INFO, "Reservation deleted: {0}", r);
             return true;
         } catch (SQLException ex) {
-            Logger.getLogger(ReservationDAO.class.getName()).log(Level.SEVERE, null, ex);
+            console.log(Level.SEVERE, null, ex);
         }
         return false;
     }
@@ -163,6 +186,21 @@ public class ReservationDAO {
             int reservationDateNoSem=rs.getInt("reservationDateNoSem");
             int apartmentID=rs.getInt("apartmentID");
             reservations.add(new Reservation(reservationID,reservationName,reservationDateYear,reservationDateNoSem,apartmentID));
+        }
+    }
+
+    private static boolean compareJsonWithTemplate(String jsonInput) {
+        try {
+            JsonNode inputJson = objectMapper.readTree(jsonInput);
+            JsonNode templateJson = objectMapper.readTree(TEMPLATE_JSON_CREATE);
+
+            Set<String> inputKeys = objectMapper.convertValue(inputJson, Map.class).keySet();
+            Set<String> templateKeys = objectMapper.convertValue(templateJson, Map.class).keySet();
+
+            return inputKeys.equals(templateKeys);
+        } catch (Exception e) {
+            console.log(Level.SEVERE, "Error comparing JSON with template", e);
+            return false;
         }
     }
 

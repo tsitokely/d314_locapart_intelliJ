@@ -2,9 +2,17 @@ package resources;
 
 import DAO.ReservationDAO;
 import entity.Reservation;
+import entity.ReservationDTO;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -12,6 +20,8 @@ import jakarta.ws.rs.core.Response;
  */
 @Path("Reservation")
 public class ReservationResource {
+    private static final Logger console = Logger.getLogger(ReservationResource.class.getName());
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     
     @GET
     @Path("/")
@@ -27,12 +37,35 @@ public class ReservationResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response NewReservations(Object input){
-        boolean result = ReservationDAO.InsertNewReservations(input);
-        if(result){
-            return Response.status(Response.Status.CREATED).build();
-        } else{
-            return Response.status(Response.Status.CONFLICT).entity("One or more similar reservations already exist or have invalid input format.").build();
+    public Response NewReservations(String inputJson){
+        try {
+            JsonNode jsonNode = objectMapper.readTree(inputJson);
+            if (jsonNode.isObject()){
+                ReservationDTO reservationDTO = objectMapper.treeToValue(jsonNode, ReservationDTO.class);
+                boolean success = ReservationDAO.InsertNewReservations(reservationDTO);
+                if (success) {
+                    return Response.status(Response.Status.CREATED).build();
+                } else {
+                    return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input format or database error").build();
+                }
+            } else if(jsonNode.isArray()) {
+                List<ReservationDTO> reservations = new ArrayList<>();
+                for (JsonNode node : jsonNode) {
+                    ReservationDTO reservationDTO = objectMapper.treeToValue(node, ReservationDTO.class);
+                    reservations.add(reservationDTO);
+                }
+                boolean success = ReservationDAO.InsertNewReservations(reservations);
+                if (success) {
+                    return Response.status(Response.Status.CREATED).build();
+                } else {
+                    return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input format or database error").build();
+                }
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).entity("Invalid input format").build();
+            }
+        } catch (Exception e){
+            console.log(Level.SEVERE, "JSON syntax error", e);
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid JSON format").build();
         }
     }
 
