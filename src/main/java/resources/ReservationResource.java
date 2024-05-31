@@ -42,7 +42,7 @@ public class ReservationResource {
             JsonNode jsonNode = objectMapper.readTree(inputJson);
             if (jsonNode.isObject()){
                 ReservationDTO reservationDTO = objectMapper.treeToValue(jsonNode, ReservationDTO.class);
-                boolean success = ReservationDAO.InsertNewReservations(reservationDTO);
+                boolean success = ReservationDAO.InsertNewReservation(reservationDTO);
                 if (success) {
                     return Response.status(Response.Status.CREATED).build();
                 } else {
@@ -51,10 +51,11 @@ public class ReservationResource {
             } else if(jsonNode.isArray()) {
                 List<ReservationDTO> reservations = new ArrayList<>();
                 for (JsonNode node : jsonNode) {
+                    console.log(Level.INFO,"your json is {0}",node);
                     ReservationDTO reservationDTO = objectMapper.treeToValue(node, ReservationDTO.class);
                     reservations.add(reservationDTO);
                 }
-                boolean success = ReservationDAO.InsertNewReservations(reservations);
+                boolean success = ReservationDAO.InsertNewReservation(reservations);
                 if (success) {
                     return Response.status(Response.Status.CREATED).build();
                 } else {

@@ -48,10 +48,12 @@ public class ReservationDAO {
         return reservations.toArray(Reservation[]::new);
     }
 
-    public static boolean InsertNewReservations(Object input){
+    public static boolean InsertNewReservation(Object input){
         if (input instanceof ReservationDTO) {
+            console.log(Level.INFO, "Single JSON");
             return InsertNewReservations(List.of((ReservationDTO) input));
         } else if (input instanceof List<?>){
+            console.log(Level.INFO, "Array of JSON");
             List<?> inputList = (List<?>) input;
             for (Object obj : inputList) {
                 if (!(obj instanceof ReservationDTO)) {
@@ -69,6 +71,7 @@ public class ReservationDAO {
     public static boolean InsertNewReservations(List<ReservationDTO> reservationsList) {
         int i = 0;
         for (ReservationDTO r : reservationsList){
+            i++ ;
             String jsonInput;
             try {
                 jsonInput = objectMapper.writeValueAsString(r);
@@ -76,12 +79,13 @@ public class ReservationDAO {
                 console.log(Level.SEVERE, "Error converting reservation to JSON", e);
                 return false;
             }
+
             console.log(Level.INFO, "input: {0}", jsonInput);
             if (!compareJsonWithTemplate(jsonInput)) {
                 console.log(Level.SEVERE, "Invalid input format for: {0}", jsonInput);
                 return false;
             }
-            i++;
+
             console.log(Level.INFO, "DB operation");
             try {
                 // Vérifier qu'il n'y a pas déjà une réservation similaire dans la BD
@@ -95,8 +99,8 @@ public class ReservationDAO {
                                 " ;"
                 );
                 if (rs.next()) {
-                    console.log(Level.INFO, "Cannot create {0}: Similar reservation already exists.", r);
-                    continue;
+                    console.log(Level.SEVERE, "Cannot create {0}: Similar reservation already exists.", r);
+                    return false;
                 } else {
                     SQLite.getConnection().query(
                             "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
@@ -107,15 +111,17 @@ public class ReservationDAO {
                                     r.getApartmentID() +
                                     ");"
                     );
-                    console.log(Level.INFO, "Reservation created: {0}", r);
-                    return true;
+                    console.log(Level.INFO, "Reservation created: {0}", r);;
+                    continue;
+
                 }
             } catch (SQLException ex) {
                 console.log(Level.SEVERE,null, ex);
+                return false;
             }
         }
         console.log(Level.INFO, "loop count: {0}", i);
-        return false;
+        return true;
     }
 
     public static boolean EditReservation(Reservation oldReservation, Reservation newReservation) {
