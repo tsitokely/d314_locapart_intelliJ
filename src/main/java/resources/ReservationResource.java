@@ -71,14 +71,19 @@ public class ReservationResource {
     }
 
     @PUT
+    @Path("/{reservationId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response EditReservation(Reservation oldReservation, Reservation newReservation){
-        boolean result = ReservationDAO.EditReservation(oldReservation, newReservation);
-        if(result){
+    public Response EditReservation(@PathParam("reservationId") int reservationId, Reservation newReservation){
+        int result = ReservationDAO.EditReservation(reservationId, newReservation);
+        if(result==1){
             return Response.ok().build();
-        } else{
-            return Response.status(Response.Status.CONFLICT).entity("Similar reservation already exists. Cannot edit.").build();
+        } else if (result==-1){
+            return Response.status(Response.Status.CONFLICT).entity("Une réservation similaire existe - ne peut être mis à jour").build();
+        } else if (result==-2){
+            return Response.status(Response.Status.CONFLICT).entity("Appartement non disponible sur cette période").build();
+        }  else{
+            return Response.status(Response.Status.BAD_REQUEST).entity("Erreur dans la mise à jour de la réservation").build();
         }
     }
 

@@ -102,6 +102,8 @@ public class ReservationDAO {
                     console.log(Level.SEVERE, "Cannot create {0}: Similar reservation already exists.", r);
                     return false;
                 } else {
+
+
                     SQLite.getConnection().query(
                             "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
                                     "Values('"+
@@ -124,48 +126,67 @@ public class ReservationDAO {
         return true;
     }
 
-    public static boolean EditReservation(Reservation oldReservation, Reservation newReservation) {
+    public static int EditReservation(int reservationId, Reservation newReservation) {
         try {
-            // Vérifier qu'il n'y a pas de conflit avec les réservations existentes
+            // Vérifier qu'il n'y a pas de réservation existantes
             ResultSet rs = SQLite.getConnection().query(
                     "SELECT * " +
                             "FROM Reservations " +
-                            "WHERE reservationName = '" + newReservation.getReservationName()  + "' " +
-                                " AND reservationDateYear = " + newReservation.getReservationDateYear() +
-                                " AND reservationDateNoSem = " + newReservation.getReservationDateNoSem() +
-                                " AND apartmentID = " + newReservation.getApartmentID() +
-                                " ;"
+                            "WHERE reservationName = '" + newReservation.getReservationName() + "' " +
+                            " AND reservationDateYear = " + newReservation.getReservationDateYear() +
+                            " AND reservationDateNoSem = " + newReservation.getReservationDateNoSem() +
+                            " AND apartmentID = " + newReservation.getApartmentID() +
+                            " ;"
             );
-
             if (rs.next()) {
                 console.log(Level.INFO, "Cannot update: similar reservation already exists.");
-                return false;
+                return -1;
             } else {
-                // Update the reservation
-                SQLite.getConnection().query(
-                        "UPDATE Reservations \n" +
-                            "SET \n" +
-                                "reservationName = '" + newReservation.getReservationName() + "'," +
-                                "reservationDateYear = " + newReservation.getReservationDateYear() + "," +
-                                "reservationDateNoSem = " + newReservation.getReservationDateNoSem() + "," +
-                                "apartmentID = " + newReservation.getApartmentID() + " \n" +
-                                "WHERE \n" +
-                                    "reservationName = '" + oldReservation.getReservationName() + "'," +
-                                    "AND reservationDateYear = " + oldReservation.getReservationDateYear() + "," +
-                                    "AND reservationDateNoSem = " + oldReservation.getReservationDateNoSem() + "," +
-                                    "AND apartmentID = " + oldReservation.getApartmentID() + " \n" +
-                                ";"
-                );
-                Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Reservation edited: {0}", newReservation);
-                return true;
+                try {
+                    // Vérifier que l'appartement est disponible sur la période
+                    ResultSet rs1 = SQLite.getConnection().query(
+                            "SELECT * \n" +
+                                    "FROM Apartments a\n" +
+                                    "INNER JOIN Cities c ON a.cityId = c.cityId\n" +
+                                    "LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID\n" +
+                                    "WHERE EXISTS (\n" +
+                                    "   SELECT 1\n" +
+                                    "   FROM Reservations r\n" +
+                                    "   WHERE r.apartmentID = a.apartmentID \n" +
+                                    "       AND (r.reservationDateYear =  "+ newReservation.getReservationDateYear() +" AND r.reservationDateNoSem = "+newReservation.getReservationDateNoSem() +")\n" +
+                                    ")\n" +
+                                    "AND a.apartmentID =" + newReservation.getApartmentID() + "\n" +
+                                    "ORDER BY 1"
+                    );
+                    if (rs1.next()) {
+                        console.log(Level.INFO, "Apartment not available on this period.");
+                        return -2;
+                    } else {
+                        // Update the reservation
+                        SQLite.getConnection().query(
+                                "UPDATE Reservations \n" +
+                                        "SET \n" +
+                                        "reservationName = '" + newReservation.getReservationName() + "'," +
+                                        "reservationDateYear = " + newReservation.getReservationDateYear() + "," +
+                                        "reservationDateNoSem = " + newReservation.getReservationDateNoSem() + "," +
+                                        "apartmentID = " + newReservation.getApartmentID() + " \n" +
+                                        "WHERE \n" +
+                                        "reservationID = " + reservationId + " " +
+                                        ";"
+                        );
+                        Logger.getLogger(ReservationDAO.class.getName()).log(Level.INFO, "Reservation edited: {0}", newReservation);
+                        return 1;
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        } catch (SQLException ex) {
-            console.log(Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-        return false;
     }
 
-    public static boolean DeleteReservation(int reservationId) {
+        public static boolean DeleteReservation(int reservationId) {
         try {
             SQLite.getConnection().query(
                     "DELETE " +
