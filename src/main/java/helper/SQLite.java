@@ -33,7 +33,7 @@ public class SQLite {
         this.connexion=DriverManager.getConnection("jdbc:sqlite:"+chemin);
     }
     
-    public static SQLite getConnection() throws SQLException{
+    public static synchronized SQLite getConnection() throws SQLException{
         if (_instance == null){
             _instance=new SQLite();
             Logger.getLogger(SQLite.class.getName()).log(Level.INFO,"Helper SQLite created");
@@ -49,6 +49,7 @@ public class SQLite {
             return executeQuery;
         }
         statement.executeUpdate(sql);
+        statement.close();
         return null;
     }
 }

@@ -70,25 +70,34 @@ public class ReservationDAO {
 
     public static boolean InsertNewReservations(List<ReservationDTO> reservationsList) {
         int i = 0;
+        // Faire un loop sur les données d'entrée
         for (ReservationDTO r : reservationsList){
             i++ ;
+
+            // Vérifier si la donnée de réservation en cours de loop 'r' est une donnée de réservation DTO
             String jsonInput;
+            // Convertir la donnée de réservation en cours de loop 'r' vers JSON
+            // Retourner une erreur si non convertible
             try {
                 jsonInput = objectMapper.writeValueAsString(r);
             } catch (Exception e) {
                 console.log(Level.SEVERE, "Error converting reservation to JSON", e);
                 return false;
             }
-
             console.log(Level.INFO, "input: {0}", jsonInput);
+
+            // Vérifier la donnée converti en cours de loop 'r' vers JSON si conforme à une donnée de réservation DTO
+            // Retourner une erreur si non conforme
             if (!compareJsonWithTemplate(jsonInput)) {
                 console.log(Level.SEVERE, "Invalid input format for: {0}", jsonInput);
                 return false;
             }
 
-            console.log(Level.INFO, "DB operation");
+            // Si la donnée en cours de loop 'r' est conforme, procéder aux opérations au niveau database
+
             try {
                 // Vérifier qu'il n'y a pas déjà une réservation similaire dans la BD
+                // Retourner une erreur si la réservation existe déjà
                 ResultSet rs = SQLite.getConnection().query(
                         "SELECT * " +
                                 "FROM Reservations " +
@@ -102,27 +111,46 @@ public class ReservationDAO {
                     console.log(Level.SEVERE, "Cannot create {0}: Similar reservation already exists.", r);
                     return false;
                 } else {
-
-
-                    SQLite.getConnection().query(
-                            "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
-                                    "Values('"+
-                                    r.getReservationName() + "'," +
-                                    r.getReservationDateYear() + "," +
-                                    r.getReservationDateNoSem() + "," +
-                                    r.getApartmentID() +
-                                    ");"
+                    // Vérifier que l'appartement est disponible sur la période séléctionné
+                    // Retourner une erreur si l'appartement n'est pas disponible
+                    ResultSet rs1 = SQLite.getConnection().query(
+                            "SELECT * \n" +
+                                    "FROM Apartments a\n" +
+                                    "INNER JOIN Cities c ON a.cityId = c.cityId\n" +
+                                    "LEFT JOIN Reservations r ON a.apartmentID = r.apartmentID\n" +
+                                    "WHERE EXISTS (\n" +
+                                    "   SELECT 1\n" +
+                                    "   FROM Reservations r\n" +
+                                    "   WHERE r.apartmentID = a.apartmentID \n" +
+                                    "       AND (r.reservationDateYear =  "+ r.getReservationDateYear() +" AND r.reservationDateNoSem = "+r.getReservationDateNoSem() +")\n" +
+                                    ")\n" +
+                                    "AND a.apartmentID =" + r.getApartmentID() + "\n" +
+                                    "ORDER BY 1"
                     );
-                    console.log(Level.INFO, "Reservation created: {0}", r);;
-                    continue;
-
+                    if (rs1.next()) {
+                        console.log(Level.INFO, "Apartment not available on this period: Year: {0}, Week: {1}.",new Object[]{r.getReservationDateYear(), r.getReservationDateNoSem() });
+                        return false;
+                    } else {
+                        // Si toutes les vérifications sont OK, faire l'insertion dans la database
+                        SQLite.getConnection().query(
+                                "INSERT INTO Reservations (reservationName,reservationDateYear,reservationDateNoSem, apartmentID)\n" +
+                                        "Values('"+
+                                        r.getReservationName() + "'," +
+                                        r.getReservationDateYear() + "," +
+                                        r.getReservationDateNoSem() + "," +
+                                        r.getApartmentID() +
+                                        ");"
+                        );
+                        console.log(Level.INFO, "Reservation created: {0}", r);;
+                        continue;
+                    }
                 }
             } catch (SQLException ex) {
                 console.log(Level.SEVERE,null, ex);
                 return false;
             }
         }
-        console.log(Level.INFO, "loop count: {0}", i);
+        console.log(Level.INFO, "Nombre de données d'entrée: {0}", i);
         return true;
     }
 

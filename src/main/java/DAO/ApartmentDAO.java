@@ -88,7 +88,7 @@ public class ApartmentDAO {
         List<Apartment> apartments=new ArrayList<Apartment>();
         try(ResultSet rs=SQLite.getConnection().query(
                 "SELECT " +
-                        "	 a.apartmentId\n" +
+                        "	 DISTINCT a.apartmentId\n" +
                         "	,c.cityId\n" +
                         "	,a.apartmentName\n" +
                         "	,a.apartmentDesc\n" +
@@ -121,7 +121,7 @@ public class ApartmentDAO {
         List<Apartment> apartments=new ArrayList<Apartment>();
         try(ResultSet rs=SQLite.getConnection().query(
                 "SELECT " +
-                        "	 a.apartmentId\n" +
+                        "	 DISTINCT a.apartmentId\n" +
                         "	,c.cityId\n" +
                         "	,a.apartmentName\n" +
                         "	,a.apartmentDesc\n" +

@@ -40,9 +40,11 @@ public class ReservationResource {
     public Response NewReservations(String inputJson){
         try {
             JsonNode jsonNode = objectMapper.readTree(inputJson);
+            //Vérifier si la donnée d'entrée est un array of JSON ou un JSON unique
             if (jsonNode.isObject()){
                 ReservationDTO reservationDTO = objectMapper.treeToValue(jsonNode, ReservationDTO.class);
                 boolean success = ReservationDAO.InsertNewReservation(reservationDTO);
+                // Lancer les opérations en DAO
                 if (success) {
                     return Response.status(Response.Status.CREATED).build();
                 } else {
@@ -51,10 +53,10 @@ public class ReservationResource {
             } else if(jsonNode.isArray()) {
                 List<ReservationDTO> reservations = new ArrayList<>();
                 for (JsonNode node : jsonNode) {
-                    console.log(Level.INFO,"your json is {0}",node);
                     ReservationDTO reservationDTO = objectMapper.treeToValue(node, ReservationDTO.class);
                     reservations.add(reservationDTO);
                 }
+                // Lancer les opérations en DAO
                 boolean success = ReservationDAO.InsertNewReservation(reservations);
                 if (success) {
                     return Response.status(Response.Status.CREATED).build();
