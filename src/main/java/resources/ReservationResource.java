@@ -83,12 +83,15 @@ public class ReservationResource {
     }
 
     @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response DeleteReservation(Reservation r){
-        boolean result = ReservationDAO.DeleteReservation(r);
+    @Path("/{reservationId}")
+    @Produces("application/json")
+    public Response DeleteReservation(@PathParam("reservationId") int reservationId){
+        boolean result = ReservationDAO.DeleteReservation(reservationId);
         if(result){
-            return Response.ok().build();
+            return Response
+                    .ok()
+                    .entity("Reservation deleted.")
+                    .build();
         } else{
             return Response.status(Response.Status.NOT_FOUND).entity("Reservation not found.").build();
         }

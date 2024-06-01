@@ -165,18 +165,15 @@ public class ReservationDAO {
         return false;
     }
 
-    public static boolean DeleteReservation(Reservation r) {
+    public static boolean DeleteReservation(int reservationId) {
         try {
             SQLite.getConnection().query(
                     "DELETE " +
                         "FROM Reservations " +
-                            "WHERE reservationName = '" + r.getReservationName()  + "' " +
-                            " AND reservationDateYear = " + r.getReservationDateYear() +
-                            " AND reservationDateNoSem = " + r.getReservationDateNoSem() +
-                            " AND apartmentID = " + r.getApartmentID() +
+                            "WHERE reservationID = " + reservationId  + " " +
                             " ;"
             );
-            console.log(Level.INFO, "Reservation deleted: {0}", r);
+            console.log(Level.INFO, "Reservation deleted: {0}", reservationId);
             return true;
         } catch (SQLException ex) {
             console.log(Level.SEVERE, null, ex);
