@@ -25,17 +25,6 @@ public class ApartmentResource {
                 .build();
     }
 
-    /*@GET
-    @Path("/{cityId}")
-    @Produces("application/json")
-    public Response ApartmentsInCity(@PathParam("cityId") String cityId){
-        return Response
-                .ok(ApartmentDAO
-                        .getAllApartmentsFromCity(cityId))
-                .status(200)
-                .build();
-    }*/
-
     @GET
     @Path("/{apartmentId}")
     @Produces("application/json")
