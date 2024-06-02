@@ -1,8 +1,0 @@
-DAO\ApartmentDAO.class
-com\emiage\wslocapart\JakartaRestConfiguration.class
-entity\Apartment.class
-helper\SQLite.class
-DAO\CityDAO.class
-entity\City.class
-resources\ApartmentResource.class
-resources\CityResource.class
